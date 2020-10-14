@@ -8,7 +8,10 @@ from flask_socketio import SocketIO
 def create_app():
 	app = Flask(__name__)
 	cors = CORS(
-		app, resources={r"/*": {"origins": ["http://127.0.0.1/*", "http://www.algowolf.com/*"]}}, 
+		app, resources={r"/*": {"origins": [
+			"http://127.0.0.1/*", "https://api.algowolf.com/*", 
+			"https://www.algowolf.com/*", "http://3.25.161.203/*"
+		]}}, 
 		supports_credentials=True,
 		allow_headers=["Authorization", "Content-Type", "Accept"]
 	)
