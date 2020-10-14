@@ -1,7 +1,13 @@
 import json
+import requests
 from app import app, sio
-from flask import Response
-from flask_socketio import emit, join_room, leave_room
+from flask import Response, request
+from flask_socketio import (
+	ConnectionRefusedError,
+	emit, join_room, leave_room
+)
+
+API_URL = 'http://nginx:3000'
 
 @app.route("/")
 def index():
@@ -52,7 +58,55 @@ def ongui_admin(data):
 
 @sio.on('subscribe', namespace='/user')
 def subscribe(data):
-	join_room('', namespace='/user')
+	headers = {
+		'Accept': '*/*',
+		'Content-Type': 'application/json',
+		'Authorization': request.headers.get('Authorization')
+	}
+
+	strategy_id = data.get('strategy_id')
+	field = data.get('field')
+	items = data.get('items')
+
+	if field == 'ontrade':
+		auth_ept = '/authorize'
+		res = requests.post(API_URL + auth_ept, headers=headers)
+
+		if res.status_code == 200:
+			join_room(strategy_id, namespace='/user')
+
+		else:
+			raise ConnectionRefusedError(f'Unauthorized access.')
+
+	elif field == 'ontick':
+		if items is None:
+			raise ConnectionRefusedError('`items` not found.')
+
+		if isinstance(items, dict):
+			chart_ept = f'/v1/strategy/{strategy_id}/charts'
+			res = requests.post(
+				API_URL + chart_ept, 
+				headers=headers, 
+				data=json.dumps({ 'items': list(items.keys()) })
+			)
+
+			status_code = res.status_code
+			data = res.json()
+
+			if res.status_code == 200:
+				print(f'DATA: {data}')
+				for product in data.get('products'):
+					for period in items.get(product):
+						room = f'{data.get("broker")}:{product}:{period}'
+						join_room(room, namespace='/user')
+
+			else:
+				raise ConnectionRefusedError(f'Unauthorized access.')
+
+		else:
+			raise ConnectionRefusedError(f'`items` object must be dict.')
+
+	
 
 
 @sio.on('unsubscribe', namespace='/user')
