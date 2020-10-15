@@ -7,8 +7,6 @@ from flask_socketio import (
 	emit, join_room, leave_room
 )
 
-API_URL = 'http://nginx:3000'
-
 @app.route("/")
 def index():
 	res = { 'message': 'Hello World!' }
@@ -70,7 +68,7 @@ def subscribe(data):
 
 	if field == 'ontrade':
 		auth_ept = '/authorize'
-		res = requests.post(API_URL + auth_ept, headers=headers)
+		res = requests.post(app.config['API_URL'] + auth_ept, headers=headers)
 
 		if res.status_code == 200:
 			join_room(strategy_id, namespace='/user')
@@ -85,7 +83,7 @@ def subscribe(data):
 		if isinstance(items, dict):
 			chart_ept = f'/v1/strategy/{strategy_id}/charts'
 			res = requests.post(
-				API_URL + chart_ept, 
+				app.config['API_URL'] + chart_ept, 
 				headers=headers, 
 				data=json.dumps({ 'items': list(items.keys()) })
 			)
