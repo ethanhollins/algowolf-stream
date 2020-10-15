@@ -7,7 +7,9 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 def create_app(test_config=None):
-	app = Flask(__name__)
+	
+	instance_path = os.path.join(os.path.abspath(os.getcwd()), 'instance')
+	app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
 
 	app.config.from_mapping(
 		SECRET_KEY='dev',
