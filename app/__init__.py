@@ -1,6 +1,9 @@
 from gevent import monkey
 monkey.patch_all()
 
+from engineio.payload import Payload
+Payload.max_decode_packets = 50
+
 import os
 from flask import Flask
 from flask_cors import CORS
