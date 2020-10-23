@@ -1,5 +1,6 @@
 import json
 import requests
+from requests.exceptions import ConnectionError
 from app import app, sio
 from flask import Response, request
 from flask_socketio import (
@@ -44,7 +45,7 @@ def ontick_admin(data):
 
 @sio.on('ontrade', namespace='/admin')
 def ontrade_admin(data):
-	room = data['strategy_id']
+	room = data['broker_id']
 	emit('ontrade', data['item'], namespace='/user', room=room)
 
 
@@ -62,16 +63,19 @@ def subscribe(data):
 		'Authorization': request.headers.get('Authorization')
 	}
 
-	strategy_id = data.get('strategy_id')
+	broker_id = data.get('broker_id')
 	field = data.get('field')
 	items = data.get('items')
 
 	if field == 'ontrade':
 		auth_ept = '/authorize'
-		res = requests.post(app.config['API_URL'] + auth_ept, headers=headers)
+		try:
+			res = requests.post(app.config['API_URL'] + auth_ept, headers=headers)
+		except ConnectionError as e:
+			raise ConnectionRefusedError('Unable to connect to API')
 
 		if res.status_code == 200:
-			join_room(strategy_id, namespace='/user')
+			join_room(broker_id, namespace='/user')
 
 		else:
 			raise ConnectionRefusedError(f'Unauthorized access.')
@@ -81,12 +85,16 @@ def subscribe(data):
 			raise ConnectionRefusedError('`items` not found.')
 
 		if isinstance(items, dict):
-			chart_ept = f'/v1/strategy/{strategy_id}/charts'
-			res = requests.post(
-				app.config['API_URL'] + chart_ept, 
-				headers=headers, 
-				data=json.dumps({ 'items': list(items.keys()) })
-			)
+			chart_ept = f'/v1/strategy/{broker_id}/charts'
+
+			try:
+				res = requests.post(
+					app.config['API_URL'] + chart_ept, 
+					headers=headers, 
+					data=json.dumps({ 'items': list(items.keys()) })
+				)
+			except ConnectionError as e:
+				raise ConnectionRefusedError('Unable to connect to API')
 
 			status_code = res.status_code
 			data = res.json()
