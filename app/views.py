@@ -55,6 +55,18 @@ def ongui_admin(data):
 	emit('ongui', data['item'], namespace='/user', room=room)
 
 
+@sio.on('start', namespace='/admin')
+def start_script(data):
+	print(data)
+	emit('start', data, namespace='/admin')
+
+
+@sio.on('stop', namespace='/admin')
+def stop_script(data):
+	print(data)
+	emit('stop', data, namespace='/admin')
+
+
 @sio.on('subscribe', namespace='/user')
 def subscribe(data):
 	headers = {
