@@ -57,14 +57,14 @@ def ongui_admin(data):
 
 @sio.on('start', namespace='/admin')
 def start_script(data):
-	print(data)
-	emit('start', data, namespace='/admin')
+	# print(data)
+	emit('start', data, namespace='/admin', broadcast=True)
 
 
 @sio.on('stop', namespace='/admin')
 def stop_script(data):
-	print(data)
-	emit('stop', data, namespace='/admin')
+	# print(data)
+	emit('stop', data, namespace='/admin', broadcast=True)
 
 
 @sio.on('subscribe', namespace='/user')
