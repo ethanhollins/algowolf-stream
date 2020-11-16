@@ -37,10 +37,10 @@ def connect_user():
 def ontick_admin(data):
 	room = '{}:{}:{}'.format(
 		data['broker'], 
-		data['item']['product'], 
-		data['item']['period']
+		data['product'], 
+		data['period']
 	)
-	emit('ontick', data.get('item'), namespace='/user', room=room)
+	emit('ontick', data, namespace='/user', room=room)
 
 
 @sio.on('ontrade', namespace='/admin')
