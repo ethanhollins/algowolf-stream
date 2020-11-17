@@ -40,13 +40,13 @@ def ontick_admin(data):
 		data['product'], 
 		data['period']
 	)
-	emit('ontick', data, namespace='/user', room=room)
+	emit('ontick', data, namespace='/user', room=room, broadcast=True)
 
 
 @sio.on('ontrade', namespace='/admin')
 def ontrade_admin(data):
 	room = data['broker_id']
-	emit('ontrade', data['item'], namespace='/user', room=room)
+	emit('ontrade', data['item'], namespace='/user', room=room, broadcast=True)
 
 
 @sio.on('ongui', namespace='/admin')
@@ -116,6 +116,7 @@ def subscribe(data):
 				for product in data.get('products'):
 					for period in items.get(product):
 						room = f'{data.get("broker")}:{product}:{period}'
+						print(room)
 						join_room(room, namespace='/user')
 
 			else:
