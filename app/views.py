@@ -99,28 +99,32 @@ def subscribe(data):
 		if isinstance(items, dict):
 			chart_ept = f'/v1/strategy/{broker_id}/charts'
 
-			try:
-				res = requests.post(
-					app.config['API_URL'] + chart_ept, 
-					headers=headers, 
-					data=json.dumps({ 'items': list(items.keys()) })
-				)
-			except ConnectionError as e:
-				raise ConnectionRefusedError('Unable to connect to API')
+			for broker in items:
+				try:
+					res = requests.post(
+						app.config['API_URL'] + chart_ept, 
+						headers=headers, 
+						data=json.dumps({
+							'broker': broker,
+							'items': list(items[broker].keys()) 
+						})
+					)
+				except ConnectionError as e:
+					raise ConnectionRefusedError('Unable to connect to API')
 
-			status_code = res.status_code
-			data = res.json()
+				status_code = res.status_code
+				data = res.json()
 
-			if res.status_code == 200:
-				print(f'DATA: {data}')
-				for product in data.get('products'):
-					for period in items.get(product):
-						room = f'{data.get("broker")}:{product}:{period}'
-						print(room)
-						join_room(room, namespace='/user')
+				if res.status_code == 200:
+					print(f'DATA: {data}')
+					for product in data.get('products'):
+						for period in items[broker].get(product):
+							room = f'{data.get("broker")}:{product}:{period}'
+							print(room)
+							join_room(room, namespace='/user')
 
-			else:
-				raise ConnectionRefusedError(f'Unauthorized access.')
+				else:
+					raise ConnectionRefusedError(f'Unauthorized access.')
 
 		else:
 			raise ConnectionRefusedError(f'`items` object must be dict.')
