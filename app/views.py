@@ -40,6 +40,7 @@ def ontick_admin(data):
 		data['product'], 
 		data['period']
 	)
+
 	emit('ontick', data, namespace='/user', room=room, broadcast=True)
 
 
@@ -47,6 +48,11 @@ def ontick_admin(data):
 def ontrade_admin(data):
 	room = data['broker_id']
 	emit('ontrade', data['item'], namespace='/user', room=room, broadcast=True)
+
+
+@sio.on('onsessionstatus', namespace='/admin')
+def onsessionstatus_admin(data):
+	emit('onsessionstatus', data, namespace='/user', broadcast=True)
 
 
 @sio.on('ongui', namespace='/admin')
@@ -118,10 +124,15 @@ def subscribe(data):
 				if res.status_code == 200:
 					print(f'DATA: {data}')
 					for product in data.get('products'):
-						for period in items[broker].get(product):
-							room = f'{data.get("broker")}:{product}:{period}'
+						if items[broker].get(product) == 'all':
+							room = f'{data.get("broker")}:{product}:all'
 							print(room)
 							join_room(room, namespace='/user')
+						else:
+							for period in items[broker].get(product):
+								room = f'{data.get("broker")}:{product}:{period}'
+								print(room)
+								join_room(room, namespace='/user')
 
 				else:
 					raise ConnectionRefusedError(f'Unauthorized access.')
