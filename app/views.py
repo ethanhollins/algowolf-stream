@@ -58,7 +58,7 @@ def onsessionstatus_admin(data):
 @sio.on('ongui', namespace='/admin')
 def ongui_admin(data):
 	room = data['strategy_id']
-	emit('ongui', data['item'], namespace='/user', room=room)
+	emit('ongui', data['item'], namespace='/user', room=room, broadcast=True)
 
 
 @sio.on('start', namespace='/admin')
