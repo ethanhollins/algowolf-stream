@@ -8,6 +8,8 @@ from flask_socketio import (
 	emit, join_room, leave_room
 )
 
+connected_brokers = []
+
 @app.route("/")
 def index():
 	res = { 'message': 'Hello World!' }
@@ -31,6 +33,22 @@ def connect_user():
 	# Check Auth
 
 	# Refuse connection if not authorized
+
+
+@sio.on('connect', namespace='/broker')
+def connect_broker():
+	broker = request.headers.get('Broker')
+	print(f'Broker {broker} Connected!')
+	if broker not in connected_brokers:
+		connected_brokers.append(broker)
+
+
+@sio.on('disconnect', namespace='/broker')
+def disconnect_broker():
+	broker = request.headers.get('Broker')
+	print(f'Broker {broker} Disconnected!')
+	if broker in connected_brokers:
+		del connected_brokers[connected_brokers.index(broker)]
 
 
 @sio.on('ontick', namespace='/admin')
@@ -59,6 +77,28 @@ def onsessionstatus_admin(data):
 def ongui_admin(data):
 	room = data['strategy_id']
 	emit('ongui', data['item'], namespace='/user', room=room, broadcast=True)
+
+
+@sio.on('broker_cmd', namespace='/admin')
+def broker_cmd(data):
+	# print(data)
+
+	if data.get('broker') in connected_brokers:
+		emit('broker_cmd', data, namespace='/broker', broadcast=True)
+	else:
+		emit(
+			'broker_res', 
+			{
+				'error': 'Broker not found.'
+			}, 
+			namespace='/admin', 
+			broadcast=True
+		)
+
+
+@sio.on('broker_res', namespace='/broker')
+def broker_res(data):
+	emit('broker_res', data, namespace='/admin', broadcast=True)
 
 
 @sio.on('start', namespace='/admin')
