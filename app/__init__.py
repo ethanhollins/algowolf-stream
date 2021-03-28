@@ -44,7 +44,10 @@ def create_app(test_config=None):
 	if 'DEBUG' in app.config:
 		app.debug = app.config['DEBUG']
 
-	sio = SocketIO(app, cors_allowed_origins='*', cors_credentials=True)
+	sio = SocketIO(
+		app, cors_allowed_origins='*', cors_credentials=True,
+		ping_timeout=60, ping_interval=10
+	)
 
 	return app, sio
 

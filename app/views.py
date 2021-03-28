@@ -127,6 +127,7 @@ def subscribe(data):
 
 	if field == 'ontrade':
 		auth_ept = '/authorize'
+		print(f'STREAM ON TRADE: {data}\n{headers}')
 		try:
 			res = requests.post(app.config['API_URL'] + auth_ept, headers=headers)
 		except ConnectionError as e:
