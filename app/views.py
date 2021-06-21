@@ -19,6 +19,11 @@ def index():
 	)
 
 
+@sio.on('connect')
+def connect_user():
+	print('Connected!')
+
+
 @sio.on('connect', namespace='/admin')
 def connect_admin():
 	print('Connected Admin!')
