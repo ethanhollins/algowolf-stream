@@ -52,8 +52,8 @@ def connect_broker():
 def disconnect_broker():
 	broker = request.headers.get('Broker')
 	print(f'Broker {broker} Disconnected!')
-	if broker in connected_brokers:
-		del connected_brokers[connected_brokers.index(broker)]
+	# if broker in connected_brokers:
+	# 	del connected_brokers[connected_brokers.index(broker)]
 
 
 @sio.on('ontick', namespace='/admin')
@@ -86,7 +86,6 @@ def ongui_admin(data):
 
 @sio.on('broker_cmd', namespace='/admin')
 def broker_cmd(data):
-	# print(data)
 
 	if data.get('broker') in connected_brokers:
 		emit('broker_cmd', data, namespace='/broker', broadcast=True)
